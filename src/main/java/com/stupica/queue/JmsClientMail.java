@@ -2,6 +2,7 @@ package com.stupica.queue;
 
 
 import com.stupica.ConstGlobal;
+import com.stupica.core.UtilString;
 
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -89,5 +90,57 @@ public class JmsClientMail extends JmsClientBase {
             }
         }
         return objQuMsg;
+    }
+
+
+    public int sendEMail(String asTo, String asSubject, String asContent) {
+        return sendEMail(null, asTo, asSubject, asContent, null);
+    }
+    /**
+     * Method: sendEMail
+     *
+     * Send ..
+     *
+     * @return int	1 = AllOK;
+     */
+    public int sendEMail(String asFrom, String asTo, String asSubject, String asContent, String asContentType) {
+        // Local variables
+        int             iResult;
+        MapMessage      objMessage = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        try {
+            objMessage = getSession().createMapMessage();
+            if (!UtilString.isEmptyTrim(asFrom))
+                objMessage.setString(sKeyFromEMail, asFrom);
+            objMessage.setString(sKeyToEMail, asTo);
+            objMessage.setString(sKeySubject, asSubject);
+            objMessage.setString(sKeyContent, asContent);
+            if (!UtilString.isEmptyTrim(asContentType))
+                objMessage.setString(sKeyContentType, asContentType);
+            objMessage.setJMSType("Map");
+        } catch (Exception ex) {
+            iResult = ConstGlobal.RETURN_ERROR;
+            logger.severe("sendEMail(): Error at message send!"
+                    + " URI: " + sQueueAddr
+                    + "; Queue: " + sQueueName
+                    + "; Msg.: " + ex.getMessage());
+            //ex.printStackTrace();
+        }
+        if (objMessage != null) {
+            try {
+                getProducer().send(objMessage);
+            } catch (Exception ex) {
+                iResult = ConstGlobal.RETURN_ERROR;
+                logger.severe("sendEMail(): Error at message send!"
+                        + " URI: " + sQueueAddr
+                        + "; Queue: " + sQueueName
+                        + "; Msg.: " + ex.getMessage());
+                //ex.printStackTrace();
+            }
+        }
+        return iResult;
     }
 }
