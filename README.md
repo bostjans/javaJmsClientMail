@@ -1,2 +1,2 @@
 # javaJmsClientMail
-Java komponent for mail message exchange to/from JMS compat. server.
+Java component for mail message exchange to/from JMS compat. server.
